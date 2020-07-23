@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="4f2314a2-9804-43a2-8e86-a97c219caed3" basePath="/ac" >
+		<http:listener-connection host="0.0.0.0" port="8083" />
+	</http:listener-config>
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="55a8ea25-af9b-4188-aa78-b258bb7b090b" >
+		<db:oracle-connection host="localhost" user="system" password="1234" instance="XE" />
+	</db:config>
+	<flow name="accountcrudFlow" doc:id="99d62d7f-a9ad-4b3e-b71c-382a8b78a942" >
+		<http:listener doc:name="Add Account" doc:id="3d67c67f-3084-43a1-9b80-d32ba5f35709" config-ref="HTTP_Listener_config" path="add" allowedMethods="POST"/>
+		<db:insert doc:name="Insert Account Query" doc:id="a620a8ee-d651-41b1-abec-3e3dd3454c0c" config-ref="Database_Config">
+			<db:sql >insert into Account (acid, acname, sal) values (:acid, :acname, :sal)</db:sql>
+			<db:input-parameters ><![CDATA[#[{'acid':payload.acid,
+'acname':payload.acname,
+'sal':payload.sal
+}]]]></db:input-parameters>
+		</db:insert>
+		<ee:transform doc:name="Response Message" doc:id="d9c700d7-3c60-4fce-979e-d184614a86bf" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"status": 200,
+	"message": "success"
+
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="03736d8d-f4d3-4c8d-ad35-a6a093268918" message="payload"/>
+	</flow>
+	<flow name="Fetch_All_Accounts" doc:id="6f53c203-4dce-4159-bec4-4a06cd65e1fc" >
+		<http:listener doc:name="Fetch All Accounts" doc:id="51912595-3c75-4ada-b0f6-46c6e2fb33d3" config-ref="HTTP_Listener_config" path="/fetchAll" allowedMethods="GET"/>
+		<db:select doc:name="Select all accounts" doc:id="b72f02f4-1ccc-4543-adba-9973a9403c0d" config-ref="Database_Config">
+			<db:sql >select * from Account</db:sql>
+		</db:select>
+		<ee:transform doc:name="Accounts Response" doc:id="3136c684-8cfc-4606-9ff1-220708468cf8" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/xml
+---
+{
+	Response:{
+		Accounts: payload map (item, index) -> {
+			AcId: item.acid default 0,
+			AcName: item.acname default "",
+			AsSal: item.sal default ""
+		}
+	}
+	
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="Fetch_account_by_name" doc:id="176fcf0e-15a7-428f-9a5f-3495cd592855" >
+		<http:listener doc:name="Fetch By Name" doc:id="a5477654-ad68-4c25-bc5b-eb489ff0f80c" config-ref="HTTP_Listener_config" path="/fetchByName"/>
+		<db:select doc:name="Select Account By Name" doc:id="aa100f0a-3c57-4d28-b4f8-dc5566c76568" config-ref="Database_Config">
+			<db:sql >select acid, acname, sal from Account where acname = :acname</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	'acname': attributes.queryParams.name
+}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="a9f03a9d-a5af-471e-a41d-2d4eb594828e" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/xml
+---
+{
+	Response:{
+		Account: payload map(item, index) ->{
+			AcId: item.acid,
+			AcName: item.acname,
+			AcSal: item.sal
+		}
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="d594f4a1-aac5-4683-b785-19ba1d51cfc3" message="#[payload]"/>
+	</flow>
+	<flow name="Fetch_ac_by_Id_pathParams" doc:id="e3eb67bf-2795-47c6-8cc9-baf6c2d3760a" >
+		<http:listener doc:name="FetchByID" doc:id="f1cb7322-2d99-4c5a-8efd-f9360f0f7ef9" config-ref="HTTP_Listener_config" path="/fetchById/{acid}"/>
+		<db:select doc:name="Select Account By Id" doc:id="a28789bd-57e4-40ff-8824-b1658125148e" config-ref="Database_Config">
+			<db:sql >select acid, acname, sal from Account where acid = :acid</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	'acid': attributes.uriParams.acid
+}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="0153daf4-7559-4e7c-950d-cf248ea902d9" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	Resourse: {
+		Account: payload map(item, index) ->{
+			Acid: item.acid,
+			AcName: item.acname,
+			AcSal: item.sal
+		}
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="6e8a8927-a1de-43d7-8f47-2d19656a1566" message="#[payload]"/>
+	</flow>
+	<flow name="update_account_flow" doc:id="93c53fb2-e053-4e99-9896-5378120a59e2" >
+		<http:listener doc:name="Update Account Listner" doc:id="dfbc8774-a86e-44a7-b60d-6eedf60cde06" config-ref="HTTP_Listener_config" path="/update" allowedMethods="POST"/>
+		<db:update doc:name="Update Account" doc:id="4da65f64-691a-473d-8845-de1552181c0f" config-ref="Database_Config">
+			<db:sql >update Account set sal = :sal where acid = :acid</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	'acid': payload.acid,
+	'sal': payload.sal
+}]]]></db:input-parameters>
+		</db:update>
+		<ee:transform doc:name="Transform Message" doc:id="303846cf-fba0-47ce-ab80-41a2826f88ed" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"Status": 200,
+	"Message": "updated scessfully"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="56a66494-c51a-4b36-b4c4-13c32b1abed5" message="#[payload]"/>
+	</flow>
+	<flow name="delete_account_Flow" doc:id="a142e0b8-ec0f-43ed-91d5-5b943750a824" >
+		<http:listener doc:name="delete Listener" doc:id="30940386-f421-4ecf-8dfc-f61a56720766" config-ref="HTTP_Listener_config" path="/delete" allowedMethods="POST"/>
+		<db:delete doc:name="Delete Account By ID" doc:id="18be34d4-376b-493b-85cd-284f8b4695d9" config-ref="Database_Config">
+			<db:sql >delete Account where acid = :acid</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	'acid': attributes.queryParams.id
+}]]]></db:input-parameters>
+		</db:delete>
+		<ee:transform doc:name="Transform Message" doc:id="cd09ae7b-51e1-46c0-b7d5-a3b7639459dd" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"Status": 200,
+	"Message": "Sucessfully deleted the Account"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="609b8599-bc7e-4b6c-8238-9930940b2937" message="#[payload]"/>
+	</flow>
+</mule>

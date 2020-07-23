@@ -1,0 +1,11 @@
+# In this project i have done CRUD operations
+Connecting to Oracle DB
+operations implemented:
+	1. Insert data into Account table
+	2. Select All Accounts from Table
+	3. Select Account By Name ( Query parameters)
+	4. Select Account By Id (URI Parameters)
+	5. Update Account
+	6. Delete Account
+	
+	
