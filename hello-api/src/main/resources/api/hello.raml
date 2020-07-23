@@ -1,0 +1,14 @@
+#%RAML 1.0
+baseUri: https://anypoint.mulesoft.com/mocking/api/v1/links/19dac22b-6d14-491a-8c2b-09c086b6d8eb/ # 
+title: hello
+
+/hello:
+  get:
+    responses:
+      200:
+        body:
+          application/json:
+            example:
+              {
+                "message": " this is the sample response from hellow end point"
+              }
