@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="48b0e620-67c9-4fbf-998f-000545088297" >
+		<http:listener-connection host="0.0.0.0" port="8083" />
+	</http:listener-config>
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="7e6b1439-5d68-4c35-87b0-4385f745cfcb" >
+		<http:request-connection host="apdev-american-api.cloudhub.io" port="80" />
+	</http:request-config>
+	<flow name="api-led-connectivity-ex1Flow" doc:id="841589d5-c54b-4805-815f-31ccb7973712" >
+		<http:listener doc:name="Listener" doc:id="767a329b-4434-4f62-bd89-7f00f7bd4bb9" config-ref="HTTP_Listener_config" path="/flights"/>
+		<logger level="INFO" doc:name="Logger" doc:id="390b67d6-3753-4f19-8d14-4fd07d69b200" message="test.."/>
+		<http:request method="GET" doc:name="Request" doc:id="d0ae118e-83ea-48c3-9d07-159a6e1fd202" config-ref="HTTP_Request_configuration" path="/flights">
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	"client_secret" : "4a87fe7e2e43488c927372AEF981F066",
+	"client_id" : "d1374b15c6864c3682ddbed2a247a826"
+}]]]></http:query-params>
+		</http:request>
+		<ee:transform doc:name="Transform Message" doc:id="90fa1e2b-361f-4eba-b4e4-de582638cc77" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload 
+
+
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
