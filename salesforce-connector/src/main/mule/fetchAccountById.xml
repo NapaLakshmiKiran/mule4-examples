@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
+	<http:listener-config name="HTTP_Listener_config-sf2" doc:name="HTTP Listener config" doc:id="008bc313-13ac-4744-b401-41e905dfde08" >
+		<http:listener-connection host="0.0.0.0" port="8082" />
+	</http:listener-config>
+	<flow name="fetchAccountByIdFlow" doc:id="99e548fc-96aa-4519-b916-41308f19513c" >
+		<http:listener doc:name="Listener" doc:id="cfb24551-9002-4e49-b944-5a402e3f751e" config-ref="HTTP_Listener_config-sf2" path="/acById"/>
+		<salesforce:query-single doc:name="Query single" doc:id="fc15fd03-ff6c-4ece-a83c-a6a270e74345" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query >select Name, Id  from Account where Id ='0015w000028baz2AAA'</salesforce:salesforce-query>
+		</salesforce:query-single>
+		<logger level="INFO" doc:name="Logger" doc:id="cd165d09-4e73-4826-8c88-71de8a03a13b" message="#[payload]"/>
+	</flow>
+</mule>

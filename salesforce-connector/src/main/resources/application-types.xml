@@ -1,0 +1,79 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="AccountData" format="json">
+      <types:shape format="weave" example="examples/AccountData.json"><![CDATA[%dw 2.0
+
+type AccountData = Array<{|  name: String,   billingAddress: String,   billingCity: String,   billingCountry: String,   billingPostalCode: String,   billingState: String|}> {"example": "[{\\\"name\\\":\\\"lakshmi\\\",\\\"billingAddress\\\":\\\"Bangalore\\\",\\\"billingCity\\\":\\\"Bng\\\",\\\"billingCountry\\\":\\\"IND\\\",\\\"billingPostalCode\\\":\\\"123123\\\",\\\"billingState\\\":\\\"KR\\\"},{\\\"name\\\":\\\"Harsha\\\",\\\"billingAddress\\\":\\\"Bangalore\\\",\\\"billingCity\\\":\\\"Bng\\\",\\\"billingCountry\\\":\\\"UK\\\",\\\"billingPostalCode\\\":\\\"799789\\\",\\\"billingState\\\":\\\"LN\\\"}]"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="contact" format="json">
+      <types:shape format="weave" example="examples/contact.json"><![CDATA[%dw 2.0
+
+type contact = Array<{|  firstName: String,   lastName: String,   email: String,   mobile: String|}> {"example": "[{\\\"firstName\\\":\\\"Jai\\\",\\\"lastName\\\":\\\"Sri Rama\\\",\\\"email\\\":\\\"srirama@gg.com\\\",\\\"mobile\\\":\\\"9999999999\\\"},{\\\"firstName\\\":\\\"shiva\\\",\\\"lastName\\\":\\\"Sankara\\\",\\\"email\\\":\\\"shiva@gg.com\\\",\\\"mobile\\\":\\\"9999999991\\\"}]"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="contactCSV" format="csv">
+      <types:shape format="weave" example="examples/contacts.csv"><![CDATA[%dw 2.0
+
+type contactCSV = Array<{|  FirstName: String,   LastName: String,   AccountName: String,   Email: String,   Phone: String|}>
+
+]]></types:shape>
+      <types:properties>
+        <types:property name="headerLineNumber" value="0"/>
+        <types:property name="header" value="true"/>
+        <types:property name="isQuotedString" value="false"/>
+      </types:properties>
+    </types:type>
+    <types:type name="contactSchema" format="csv">
+      <types:shape format="weave" example="examples/contactsData.csv"><![CDATA[%dw 2.0
+
+type contactSchema = Array<{|  firstName: String,   lastName: String,   email: String,   mobile: String|}>
+
+]]></types:shape>
+      <types:properties>
+        <types:property name="headerLineNumber" value="0"/>
+        <types:property name="header" value="true"/>
+        <types:property name="isQuotedString" value="false"/>
+      </types:properties>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#cc0d8c8b-ca9c-4a28-8948-98e14a457778">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="AccountData"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#001bbe06-87c5-4c7e-9e5b-0a984b939534">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="contact"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#48b4343f-fdf8-41e6-8288-839a1b08660d">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="contactSchema"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#017cadc9-6f89-45f4-87b0-3d6b1cb46868">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="contactSchema"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+</types:mule>

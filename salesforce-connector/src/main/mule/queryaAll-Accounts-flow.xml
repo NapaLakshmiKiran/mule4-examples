@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config4" doc:name="HTTP Listener config" doc:id="d9b47a20-5888-419d-bc27-7c3d34def5e2" >
+		<http:listener-connection host="0.0.0.0" port="8084" />
+	</http:listener-config>
+	<flow name="queryaAll-Accounts-flowFlow" doc:id="a3fd4fd9-93ba-42e4-ac33-833a311370d7" >
+		<http:listener doc:name="Listener" doc:id="39ff4bed-c29e-4897-be68-b43214443fe8" config-ref="HTTP_Listener_config4" path="/allAccounts"/>
+		<salesforce:query-all doc:name="Query all" doc:id="938d3ce7-bf89-4218-82b8-f40a752e12c2" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query >select Name, BillingCity, BillingCountry, BillingPostalCode from Account </salesforce:salesforce-query>
+		</salesforce:query-all>
+		<ee:transform doc:name="Transform Message" doc:id="941ef5d0-88b8-497f-a972-f47e7fe6a42b" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="queryByBillingCity-Accounts-flowFlow" doc:id="c0bfa4ea-fc98-4932-8310-78ecef072250" >
+		<http:listener doc:name="Listener" doc:id="a0fb7827-5fd1-4559-afd9-54ee7a8369fc" config-ref="HTTP_Listener_config4" path="/accounts" />
+		<set-variable value="#[attributes.queryParams.billingCity default '']" doc:name="Set Variable" doc:id="ea4d1c12-3868-4ce6-b70e-2a92af3bffc6" variableName="billingCity"/>
+		<logger level="INFO" doc:name="Logger" doc:id="b8ceec0d-6709-4a29-92f8-60bd9719af4b" message="#[attributes.queryParams.billingCity]"/>
+		<choice doc:name="Choice" doc:id="329e3e47-f1d4-413d-a0ac-0791bc409c56" >
+			<when expression="#[vars.billingCity !='']">
+				<logger level="INFO" doc:name="Logger" doc:id="7d628a1c-c0f6-49d0-9cdb-dfebc95ff8a6" message="T1111"/>
+				<salesforce:query doc:name="Query1" doc:id="afe22a3b-b44e-4473-9e0b-0de8bdf5fed8" config-ref="Salesforce_Config">
+					<salesforce:salesforce-query >select Name, BillingCity, BillingCountry, BillingPostalCode from Account where BillingCity =':bc'</salesforce:salesforce-query>
+					<salesforce:parameters ><![CDATA[#[output application/java
+---
+{
+	bc : vars.billingCity
+}]]]></salesforce:parameters>
+				</salesforce:query>
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Logger" doc:id="50ed62c0-2fba-4ab3-b4e8-1354ffd87b9d" message="T2222"/>
+				<salesforce:query-all doc:name="QueryAll" doc:id="b8fc1858-debb-4aca-a52e-7d320e4c2266" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query>select Name, BillingCity, BillingCountry, BillingPostalCode from Account </salesforce:salesforce-query>
+		</salesforce:query-all>
+			</otherwise>
+		</choice>
+		<ee:transform doc:name="Copy_of_Transform Message" doc:id="b6a6d05e-f96c-4e48-9a8f-b2c630904e03" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

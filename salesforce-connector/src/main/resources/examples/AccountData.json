@@ -1,0 +1,15 @@
+[{
+"name":"lakshmi",
+"billingAddress":"Bangalore",
+"billingCity":"Bng",
+"billingCountry":"IND",
+"billingPostalCode":"123123",
+"billingState":"KR"
+},
+{"name":"Harsha",
+"billingAddress":"Bangalore",
+"billingCity":"Bng",
+"billingCountry":"UK",
+"billingPostalCode":"799789",
+"billingState":"LN"
+}]

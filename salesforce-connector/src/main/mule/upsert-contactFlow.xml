@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config-sf3" doc:name="HTTP Listener config" doc:id="7f9239bc-61d6-4d5b-af6e-ac164546b68b" >
+		<http:listener-connection host="0.0.0.0" port="8083" />
+	</http:listener-config>
+	<flow name="upsert-contactFlowFlow" doc:id="f5ff0dd5-29fa-4c4f-956d-640f0f7c5aad" >
+		<http:listener doc:name="Listener" doc:id="79c98e8f-4428-42ef-8ff6-115d3a95851c" config-ref="HTTP_Listener_config-sf3" path="/upsertContact"/>
+		<ee:transform doc:name="Transform Message" doc:id="001bbe06-87c5-4c7e-9e5b-0a984b939534" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload map (item, index) -> {
+	LastName: item.lastName,
+	FirstName: item.firstName,
+	Email: item.email,
+	MobilePhone: item.mobile,
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<salesforce:upsert type="Contact" doc:name="Upsert" doc:id="7332440f-7358-4093-a260-e2117bebcd20" config-ref="Salesforce_Config" externalIdFieldName="Email"/>
+		<ee:transform doc:name="Transform Message" doc:id="008f7ed6-0aee-4d70-9f28-5407b7740609" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

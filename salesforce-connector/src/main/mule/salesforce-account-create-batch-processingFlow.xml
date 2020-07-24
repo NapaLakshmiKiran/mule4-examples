@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:batch="http://www.mulesoft.org/schema/mule/batch" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
+	<file:config name="File_Config" doc:name="File Config" doc:id="76f95480-3d20-4f06-a564-9f363558e51d" >
+		<file:connection workingDir="D:\MuleExamples\salesforce\in" />
+	</file:config>
+	<flow name="salesforce-account-create-batch-processingFlowFlow" doc:id="fd1a5240-c0bf-4921-b10d-d2baa9526711" >
+		<file:listener doc:name="On New or Updated File" doc:id="3db6f078-baa8-447e-8960-43f2474aa3b3" config-ref="File_Config" directory="D:\MuleExamples\salesforce\in" autoDelete="true" moveToDirectory="D:\MuleExamples\salesforce\out">
+			<scheduling-strategy >
+				<fixed-frequency frequency="20" timeUnit="SECONDS" />
+			</scheduling-strategy>
+		</file:listener>
+		<ee:transform doc:name="Transform Message" doc:id="5062c492-d20c-46c1-9bec-e4c76af50188" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<batch:job jobName="salesforce-account-create-batch-processingFlowBatch_Job" doc:id="6d6c8e59-5055-44e7-af84-92397eb7775e" >
+			<batch:process-records >
+				<batch:step name="Batch_Step" doc:id="8dcc430e-b91d-4ca0-8ae1-d6652b8287c6" >
+					<ee:transform doc:name="Transform Message" doc:id="48b4343f-fdf8-41e6-8288-839a1b08660d" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	LastName: payload.lastName,
+	FirstName: payload.firstName,
+	Email: payload.email,
+	MobilePhone: payload.mobile,
+		
+}
+]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+					<salesforce:create-single type="Contact" doc:name="Create single" doc:id="0abc6d70-9de8-49da-ab04-1ba5bc261cfc" config-ref="Salesforce_Config"/>
+					<ee:transform doc:name="Transform Message" doc:id="1df7ab86-0306-44a8-9520-26d8b2d8711d" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+					<logger level="INFO" doc:name="Logger" doc:id="f6fae1f2-0f8b-4364-9ad0-0df26a1a413f" message="#[payload]"/>
+				</batch:step>
+			</batch:process-records>
+			<batch:on-complete >
+				<logger level="INFO" doc:name="Logger" doc:id="8fcc6828-01cd-4251-9305-56608334129e" message="Job Completed."/>
+			</batch:on-complete>
+		</batch:job>
+	</flow>
+</mule>
