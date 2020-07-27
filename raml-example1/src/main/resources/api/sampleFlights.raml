@@ -1,0 +1,39 @@
+#%RAML 1.0
+title: SampleFlights
+
+/unitedflights:
+  get:
+    queryParameters:
+      destination:
+        required: true
+        minLength: 3
+        maxLength: 3
+    responses:
+      200:
+        body:
+          application/json:
+            example: |
+              {
+                "flights": [{
+                  "code": "ER38sd",
+                  "price": 400,
+                  "origin": "MUA",
+                  "destination": "SFO",
+                  "departureDate": "2015/03/20",
+                  "airlineName": "United",
+                  "planeType": "Boeing 737",
+                  "emptySeats": 0
+                }, {
+                  "code": "ER45if",
+                  "price": 345.99,
+                  "origin": "MUA",
+                  "destination": "LAX",
+                  "departureDate": "2015/02/11",
+                  "airlineName": "United",
+                  "planeType": "Boeing 737",
+                  "emptySeats": 52
+                }]
+              }
+              
+          
+      
