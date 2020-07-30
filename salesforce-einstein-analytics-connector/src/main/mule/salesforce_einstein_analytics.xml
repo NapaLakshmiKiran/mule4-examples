@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+ 
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:file="http://www.mulesoft.org/schema/mule/file"
+    xmlns:salesforce-analytics="http://www.mulesoft.org/schema/mule/salesforce-analytics"
+    xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/salesforce-analytics http://www.mulesoft.org/schema/mule/salesforce-analytics/current/mule-salesforce-analytics.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+    <salesforce-analytics:salesforce-analytics-config name="Salesforce_Analytics_Config" doc:name="Salesforce Analytics Config" doc:id="31d1fa78-6524-4689-8ef0-7c66bd23d515" >
+        <salesforce-analytics:basic-connection username="nlk@analytics.com" password="Kiran@123" securityToken="CNsqHe8IN0bJ4d81A8zx1kmr" />
+    </salesforce-analytics:salesforce-analytics-config>
+    <http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="4d714a16-ae5a-4747-8d4a-de6e6768cef3" >
+        <http:listener-connection host="0.0.0.0" port="8081" />
+    </http:listener-config>
+    <file:config name="File_Config" doc:name="File Config" doc:id="cdc03ef9-f5a4-4ed4-8049-7c56750cf454" >
+		<file:connection />
+	</file:config>
+	<flow name="salesforce-eaFlow" doc:id="cda7e5b8-a6aa-4747-b2ce-02da6f2e2b99" >
+        <http:listener doc:name="Listener" doc:id="acae8b64-90b0-4901-9a5f-4413021a2d59" config-ref="HTTP_Listener_config" path="/getData"/>
+        <file:read doc:name="Read" doc:id="045c0ce1-7a5a-417c-8332-464e9fdefc50" path="D:\MuleExamples\salesforce\salesforce-einstein-analytics\Survey.csv" config-ref="File_Config"/>
+        <ee:transform doc:name="Transform Message" doc:id="8acccf30-8bfe-4243-ab9f-472a4a3850a7" >
+            <ee:message >
+                <ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload map (item, index) ->{
+Year: item.Year,
+Industry_Code: item.Industry_Code,
+Industry_Name: item.Industry_Name,
+Group_Size: item.Group_Size,
+Variable: item.Variable,
+Value: item.Value,
+Unit: item.Unit
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+        <salesforce-analytics:upload-external-data-into-new-data-set-and-start-processing doc:name="Upload external data into new data set and start processing" doc:id="f5f8bb5d-fcb4-4b62-97cd-75ae6bf6df7a" config-ref="Salesforce_Analytics_Config" type="D:\MuleExamples\salesforce\salesforce-einstein-analytics\meta.json" operation="UPSERT" description="DataSet2" label="DataSet2" dataSetName="DataSet2"/>
+    </flow>
+</mule>

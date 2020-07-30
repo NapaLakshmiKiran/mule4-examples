@@ -1,0 +1,11 @@
+upset the csv file data into the new datasets, loaded to the einstein anaytics studio
+to view this data we have to add the anaytics app to the salesforce account and then use that anaytics details to login authenticate.
+here we have to prepare the meta json file
+use transform message to create payload which sales force data set accepts
+
+
+after run the program, csv data to be uploaded to the salesfoce,
+we can create stories with that data set
+we can use dashbord to view th anaytics, like what happend, why it happend and what could happen.
+
+used 'Upload external data into new data set and start processing' connector
