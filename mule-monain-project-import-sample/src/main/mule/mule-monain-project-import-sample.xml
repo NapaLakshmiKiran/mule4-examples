@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<flow name="mule-monain-project-import-sampleFlow" doc:id="8f7457e8-1f31-40c7-8ace-455598789266" >
+		<http:listener doc:name="Listener" doc:id="25f99578-6736-424c-a8ab-cc2f47297130" config-ref="HTTP_Listener_config" path="/test"/>
+		<set-payload value="Hello mule... Domain project project imported sucessfully" doc:name="Set Payload" doc:id="a4e0d11c-d9f9-489d-bcaa-4d5596c96a0b" />
+	</flow>
+</mule>
